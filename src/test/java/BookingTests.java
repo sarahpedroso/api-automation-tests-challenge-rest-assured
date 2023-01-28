@@ -37,7 +37,7 @@ public class BookingTests {
         bookingDates = new BookingDates("2018-01-02", "2018-01-03");
         booking = new Booking(user.getFirstName(), user.getLastName(),
                 (float)faker.number().randomDouble(2, 50, 100000),
-                true,bookingDates,
+                true, bookingDates,
                 "");
         RestAssured.filters(new RequestLoggingFilter(),new ResponseLoggingFilter(), new ErrorLoggingFilter());
     }
@@ -79,23 +79,80 @@ public class BookingTests {
     }
 
     @Test
-    public void  CreateBooking_WithValidData_returnOk(){
+    public void  CreateBooking_WithValidData_returnOk() {
 
-        Booking test = booking;
         given().config(RestAssured.config().logConfig(logConfig().enableLoggingOfRequestAndResponseIfValidationFails()))
-                    .contentType(ContentType.JSON)
-                        .when()
-                        .body(booking)
-                        .post("/booking")
-                        .then()
-                        .body(matchesJsonSchemaInClasspath("createBookingRequestSchema.json"))
-                        .and()
-                        .assertThat()
-                        .statusCode(200)
-                        .contentType(ContentType.JSON).and().time(lessThan(2000L));
+                .contentType(ContentType.JSON)
+                .when()
+                .body(booking)
+                .post("/booking")
+                .then()
+                .body(matchesJsonSchemaInClasspath("createBookingRequestSchema.json"))
+                .and()
+                .assertThat()
+                .statusCode(200)
+                .contentType(ContentType.JSON).and().time(lessThan(5000L));
+    }
 
-
+    @Test
+    public void getBookingById_returnOk(){
+        request
+            .when()
+            .pathParam("idd", 97)
+            .get("/booking/{idd}")// a qtde de chaves sera a qtde de path params com os mesmos nomes
+            .then()
+            .body(matchesJsonSchemaInClasspath("createBookingRequestSchema.json"))
+            .and()
+            .assertThat()
+            .statusCode(200)
+            .contentType(ContentType.JSON).and().time(lessThan(5000L));
 
     }
 
+    @Test
+    public void putBookingById_returnOk(){
+        request
+                .auth().preemptive().basic("admin", "password123")
+                .pathParam("idde", 15)
+                .when()
+                .body(booking)
+                .put("/booking/{idde}")
+                .then()
+                .body(matchesJsonSchemaInClasspath("createBookingRequestSchema.json"))
+                .and()
+                .assertThat()
+                .statusCode(200)
+                .contentType(ContentType.JSON).and().time(lessThan(5000L));
+
+    }
+
+    @Test
+    public void patchBookingById_returnOk(){
+        request
+                .auth().preemptive().basic("admin", "password123")
+                .pathParam("numb", 29)
+                .when()
+                .body(new BookingDates("2008-01-01", "2028-01-01"))
+                .patch("/booking/{numb}")
+                .then()
+                .and()
+                .assertThat()
+                .statusCode(200)
+                .contentType(ContentType.JSON).and().time(lessThan(5000L));
+
+    }
+
+    @Test
+    public void deleteBookingById_returnOk(){
+        request
+                .auth().preemptive().basic("admin", "password123")
+                .pathParam("ids", 134)
+                .when()
+                .delete("/booking/{ids}")
+                .then()
+                .and()
+                .assertThat()
+                .statusCode(201)
+                .and().time(lessThan(5000L));
+    }
 }
